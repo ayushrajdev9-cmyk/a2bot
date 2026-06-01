@@ -20,7 +20,7 @@ An all-in-one Discord bot created by **Ayushrajdev Anzariqbal**. Moderates, play
 
 1. **Clone & install**
    ```bash
-   git clone https://github.com/Ayushrajdev/a2bot.git
+   git clone https://github.com/ayushrajdev9-cmyk/a2bot.git
    cd a2bot
    npm install
    ```
