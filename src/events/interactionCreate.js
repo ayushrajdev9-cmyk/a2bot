@@ -1,4 +1,5 @@
 const { Collection } = require('discord.js');
+const db = require('../utils/database');
 const logger = require('../utils/logger');
 const embeds = require('../utils/embeds');
 
@@ -10,6 +11,12 @@ module.exports = {
 
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
+
+    // Blacklist check
+    const blacklisted = db.get('blacklist', 'list') || [];
+    if (blacklisted.includes(interaction.user.id) && interaction.user.id !== client.config.ownerId) {
+      return interaction.reply({ embeds: [embeds.error('Blacklisted', 'You are blacklisted from using this bot.')], ephemeral: true });
+    }
 
     // Owner bypass for cooldowns
     const isOwner = interaction.user.id === client.config.ownerId;

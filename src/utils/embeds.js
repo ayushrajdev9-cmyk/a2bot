@@ -9,19 +9,27 @@ function base(title, color = config.colors.primary) {
 }
 
 function success(title, description) {
-  return base(title, config.colors.success).setDescription(description);
+  const embed = base(title, config.colors.success);
+  if (description) embed.setDescription(description);
+  return embed;
 }
 
 function error(title, description) {
-  return base(title, config.colors.error).setDescription(description);
+  const embed = base(title, config.colors.error);
+  if (description) embed.setDescription(description);
+  return embed;
 }
 
 function warning(title, description) {
-  return base(title, config.colors.warning).setDescription(description);
+  const embed = base(title, config.colors.warning);
+  if (description) embed.setDescription(description);
+  return embed;
 }
 
 function info(title, description) {
-  return base(title, config.colors.primary).setDescription(description);
+  const embed = base(title, config.colors.primary);
+  if (description) embed.setDescription(description);
+  return embed;
 }
 
 module.exports = { base, success, error, warning, info };

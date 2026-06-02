@@ -34,7 +34,7 @@ module.exports = {
 
     try {
       const response = await openai.chat.completions.create({
-        model: 'google/gemini-2.0-flash-exp:free',
+        model: 'openai/gpt-4o-mini',
         messages: context.slice(-10),
         max_tokens: 500,
       });
