@@ -4,3 +4,5 @@ data/
 bot.log
 start.sh
 cmds.json
+cmds_bulk.json
+deploy_wait.sh
