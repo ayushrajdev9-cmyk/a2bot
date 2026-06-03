@@ -48,4 +48,4 @@ An all-in-one Discord bot created by **Ayushrajdev Anzariqbal**. Moderates, play
 ## License
 
 MIT — free to use, modify, and distribute.
-yayyy i hope this repo will gaim some starss
+yayyy i hope this repo will gaim some stars yayyyy
