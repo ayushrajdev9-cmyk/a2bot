@@ -23,23 +23,26 @@ module.exports = {
 
     if (!artist) {
       return interaction.reply({
-        embeds: [embeds.error('Please specify the song as **artist - title** or **title by artist**.')],
+        embeds: [embeds.error('Error', 'Please specify the song as **artist - title** or **title by artist**.')],
         ephemeral: true,
       });
     }
 
-    const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
-    const res = await fetch(url);
+    await interaction.deferReply();
 
-    if (!res.ok) {
-      return interaction.reply({ embeds: [embeds.error('Could not find lyrics for that song.')] });
+    try {
+      const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Not found');
+      const data = await res.json();
+      if (!data.lyrics) throw new Error('No lyrics');
+
+      const lyrics = data.lyrics.slice(0, 4096);
+      await interaction.editReply({
+        embeds: [embeds.info(`🎵 ${title} - ${artist}`, `\`\`\`${lyrics}\`\`\``)],
+      });
+    } catch {
+      await interaction.editReply({ embeds: [embeds.error('Error', 'Could not find lyrics for that song.')] });
     }
-
-    const data = await res.json();
-    const lyrics = data.lyrics.slice(0, 4096);
-
-    await interaction.reply({
-      embeds: [embeds.info(`🎵 ${title} - ${artist}`, `\`\`\`${lyrics}\`\`\``)],
-    });
   },
 };

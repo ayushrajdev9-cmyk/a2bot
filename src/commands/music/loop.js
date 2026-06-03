@@ -14,11 +14,9 @@ module.exports = {
     const { getQueue } = require('./play');
     const queue = getQueue(interaction.guild.id);
 
-    const mode = interaction.options.getString('mode') || 'song';
-
     const modes = ['off', 'song', 'queue'];
-    const currentIndex = modes.indexOf(queue.loopMode || 'off');
-    const nextMode = mode || modes[(currentIndex + 1) % modes.length];
+    const mode = interaction.options.getString('mode');
+    const nextMode = mode || modes[(modes.indexOf(queue.loopMode || 'off') + 1) % modes.length];
 
     queue.loopMode = nextMode;
 

@@ -19,7 +19,7 @@ module.exports = {
     }
 
     const desc = userWarnings.map((w, i) =>
-      `**#${i + 1}** - ${w.reason}\nModerator: ${w.moderatorTag}\n<t:${Math.floor(w.date / 1000)}:f>`
+      `**#${i + 1}** - ${w.reason}\nModerator: ${w.moderator}\n<t:${Math.floor(new Date(w.date).getTime() / 1000)}:f>`
     ).join('\n\n');
 
     logger.info(`${interaction.user.tag} checked warnings for ${target.tag} (${userWarnings.length} total)`);

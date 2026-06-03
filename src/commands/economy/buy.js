@@ -47,7 +47,7 @@ module.exports = {
 
     if (userData.balance < totalCost) {
       return interaction.reply({
-        embeds: [embeds.error(`You need **${totalCost}** coins but only have **${userData.balance}**.`)],
+        embeds: [embeds.error('Insufficient Funds', `You need **${totalCost}** coins but only have **${userData.balance}**.`)],
       });
     }
 
@@ -63,7 +63,7 @@ module.exports = {
     db.set('economy', interaction.user.id, userData);
 
     await interaction.reply({
-      embeds: [embeds.success(`Purchased **${quantity}x ${itemName}** for **${totalCost}** coins.`)],
+      embeds: [embeds.success('Purchase Successful', `Purchased **${quantity}x ${itemName}** for **${totalCost}** coins.`)],
     });
   },
 };

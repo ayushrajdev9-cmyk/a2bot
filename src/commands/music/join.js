@@ -13,12 +13,15 @@ module.exports = {
       return interaction.reply({ embeds: [embeds.error('Error', 'You must be in a voice channel.')], ephemeral: true });
     }
 
-    joinVoiceChannel({
-      channelId: channel.id,
-      guildId: interaction.guild.id,
-      adapterCreator: interaction.guild.voiceAdapterCreator,
-    });
-
-    await interaction.reply({ embeds: [embeds.success('Joined', `Joined ${channel.name}`)] });
+    try {
+      joinVoiceChannel({
+        channelId: channel.id,
+        guildId: interaction.guild.id,
+        adapterCreator: interaction.guild.voiceAdapterCreator,
+      });
+      await interaction.reply({ embeds: [embeds.success('Joined', `Joined ${channel.name}`)] });
+    } catch {
+      await interaction.reply({ embeds: [embeds.error('Error', 'Could not join the voice channel.')], ephemeral: true });
+    }
   },
 };

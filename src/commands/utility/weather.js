@@ -33,6 +33,7 @@ module.exports = {
       const { latitude, longitude, name, country } = geoData.results[0];
       const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
       const weatherData = await weatherRes.json();
+      if (!weatherData.current_weather) throw new Error('No weather data');
       const w = weatherData.current_weather;
 
       const desc = weatherCodes[w.weathercode] || 'Unknown';

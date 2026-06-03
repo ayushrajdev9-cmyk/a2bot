@@ -18,8 +18,11 @@ async function playTrack(guildId) {
   const track = queue.tracks[0];
   try {
     const stream = await playdl.stream(track.url);
-    const resource = createAudioResource(stream.stream, { inputType: stream.type });
+    const vol = (queue.volume || 100) / 100;
+    const resource = createAudioResource(stream.stream, { inputType: stream.type, inlineVolume: true });
+    resource.volume?.setVolume(vol);
     queue.player.play(resource);
+    queue.currentTrack = { title: track.title, url: track.url, duration: track.duration || 0, startTime: Date.now() };
   } catch (err) {
     logger.error('Playback error:', err);
     queue.tracks.shift();
@@ -43,13 +46,13 @@ module.exports = {
 
     let track;
     if (query.match(/^https?:\/\//)) {
-      track = { url: query, title: query };
+      track = { url: query, title: query, duration: 0 };
     } else {
       const results = await playdl.search(query, { limit: 1 });
       if (!results.length) {
         return interaction.editReply({ embeds: [embeds.error('Error', 'No results found.')] });
       }
-      track = { url: results[0].url, title: results[0].title };
+      track = { url: results[0].url, title: results[0].title, duration: results[0].durationInSec || 0 };
     }
 
     const queue = getQueue(interaction.guild.id);
@@ -64,8 +67,16 @@ module.exports = {
 
       queue.connection.subscribe(queue.player);
       queue.player.on(AudioPlayerStatus.Idle, () => {
-        queue.tracks.shift();
-        playTrack(interaction.guild.id);
+        if (queue.loopMode === 'song') {
+          playTrack(interaction.guild.id);
+        } else {
+          queue.tracks.shift();
+          if (queue.loopMode === 'queue' && queue.tracks.length) {
+            const track = queue.tracks.shift();
+            queue.tracks.push(track);
+          }
+          playTrack(interaction.guild.id);
+        }
       });
     }
 

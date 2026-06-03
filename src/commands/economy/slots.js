@@ -21,7 +21,7 @@ module.exports = {
 
     if (userData.balance < bet) {
       return interaction.reply({
-        embeds: [embeds.error(`You don't have enough coins. You have **${userData.balance}** coins.`)],
+        embeds: [embeds.error('Insufficient Funds', `You don't have enough coins. You have **${userData.balance}** coins.`)],
       });
     }
 
@@ -71,9 +71,7 @@ module.exports = {
     db.set('economy', interaction.user.id, userData);
 
     const description = `${reels.join(' | ')}\n\n${winnings > 0 ? `You won **${winnings}** coins!` : 'You lost. Better luck next time.'}`;
-    const embed = embeds.info()
-      .setTitle('🎰 Slots')
-      .setDescription(description);
+    const embed = embeds.info('🎰 Slots', description);
 
     await interaction.reply({ embeds: [embed] });
   },

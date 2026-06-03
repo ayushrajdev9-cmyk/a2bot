@@ -17,7 +17,7 @@ module.exports = {
     if (now - (userData.lastWork || 0) < COOLDOWN) {
       const remaining = Math.ceil((COOLDOWN - (now - (userData.lastWork || 0))) / 60000);
       return interaction.reply({
-        embeds: [embeds.warning(`You must wait **${remaining}** minutes before working again.`)],
+        embeds: [embeds.warning('Cooldown', `You must wait **${remaining}** minutes before working again.`)],
       });
     }
 
@@ -32,7 +32,7 @@ module.exports = {
     db.set('economy', interaction.user.id, userData);
 
     await interaction.reply({
-      embeds: [embeds.success(`You worked as a **${job}** and earned **${earned}** coins!`)],
+      embeds: [embeds.success('💼 Work Complete', `You worked as a **${job}** and earned **${earned}** coins!`)],
     });
   },
 };

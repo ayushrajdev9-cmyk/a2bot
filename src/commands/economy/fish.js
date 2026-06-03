@@ -17,7 +17,7 @@ module.exports = {
     if (now - (userData.lastFish || 0) < COOLDOWN) {
       const remaining = Math.ceil((COOLDOWN - (now - (userData.lastFish || 0))) / 1000);
       return interaction.reply({
-        embeds: [embeds.warning(`You must wait **${remaining}** seconds before fishing again.`)],
+        embeds: [embeds.warning('Cooldown', `You must wait **${remaining}** seconds before fishing again.`)],
       });
     }
 
@@ -34,7 +34,7 @@ module.exports = {
       db.set('economy', interaction.user.id, userData);
 
       await interaction.reply({
-        embeds: [embeds.success(`🎣 You caught a **${fish}** and earned **${earned}** coins!`)],
+        embeds: [embeds.success('🎣 Fishing Success', `You caught a **${fish}** and earned **${earned}** coins!`)],
       });
     } else {
       const lost = 5;
@@ -44,7 +44,7 @@ module.exports = {
       db.set('economy', interaction.user.id, userData);
 
       await interaction.reply({
-        embeds: [embeds.error(`🐟 You didn't catch anything and lost **${lost}** coins on bait.`)],
+        embeds: [embeds.error('🐟 Fishing Failed', `You didn't catch anything and lost **${lost}** coins on bait.`)],
       });
     }
   },

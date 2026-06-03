@@ -20,7 +20,7 @@ module.exports = {
     const amount = interaction.options.getInteger('amount');
 
     if (target.id === interaction.user.id) {
-      return interaction.reply({ embeds: [embeds.error('You cannot give coins to yourself.')] });
+      return interaction.reply({ embeds: [embeds.error('Invalid Target', 'You cannot give coins to yourself.')] });
     }
 
     let senderData = db.get('economy', interaction.user.id);
@@ -28,7 +28,7 @@ module.exports = {
 
     if (senderData.balance < amount) {
       return interaction.reply({
-        embeds: [embeds.error(`You don't have enough coins. You have **${senderData.balance}** coins.`)],
+        embeds: [embeds.error('Insufficient Funds', `You don't have enough coins. You have **${senderData.balance}** coins.`)],
       });
     }
 
@@ -42,7 +42,7 @@ module.exports = {
     db.set('economy', target.id, targetData);
 
     await interaction.reply({
-      embeds: [embeds.success(`Gave **${amount}** coins to **${target.username}**.`)],
+      embeds: [embeds.success('Transfer Complete', `Gave **${amount}** coins to **${target.username}**.`)],
     });
   },
 };

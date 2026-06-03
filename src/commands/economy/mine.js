@@ -17,7 +17,7 @@ module.exports = {
     if (now - (userData.lastMine || 0) < COOLDOWN) {
       const remaining = Math.ceil((COOLDOWN - (now - (userData.lastMine || 0))) / 60000);
       return interaction.reply({
-        embeds: [embeds.warning(`You must wait **${remaining}** minutes before mining again.`)],
+        embeds: [embeds.warning('Cooldown', `You must wait **${remaining}** minutes before mining again.`)],
       });
     }
 
@@ -34,12 +34,12 @@ module.exports = {
       db.set('economy', interaction.user.id, userData);
 
       await interaction.reply({
-        embeds: [embeds.success(`⛏️ You mined **${ore}** and earned **${earned}** coins!`)],
+        embeds: [embeds.success('⛏️ Mining Success', `You mined **${ore}** and earned **${earned}** coins!`)],
       });
     } else {
       db.set('economy', interaction.user.id, userData);
       await interaction.reply({
-        embeds: [embeds.error('⛏️ You mined but found nothing valuable.')],
+        embeds: [embeds.error('⛏️ No Luck', 'You mined but found nothing valuable.')],
       });
     }
   },

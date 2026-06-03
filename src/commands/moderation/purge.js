@@ -11,10 +11,13 @@ module.exports = {
   async execute(interaction) {
     const amount = interaction.options.getInteger('amount');
 
-    const messages = await interaction.channel.bulkDelete(amount, true);
-    logger.info(`${interaction.user.tag} purged ${messages.size} messages in #${interaction.channel.name}`);
-
-    const reply = await interaction.reply({ embeds: [embeds.success('Purged', `Deleted ${messages.size} messages.`)], fetchReply: true });
-    setTimeout(() => reply.delete().catch(() => {}), 3000);
+    try {
+      const messages = await interaction.channel.bulkDelete(amount, true);
+      logger.info(`${interaction.user.tag} purged ${messages.size} messages in #${interaction.channel.name}`);
+      const reply = await interaction.reply({ embeds: [embeds.success('Purged', `Deleted ${messages.size} messages.`)], fetchReply: true });
+      setTimeout(() => reply.delete().catch(() => {}), 3000);
+    } catch {
+      await interaction.reply({ embeds: [embeds.error('Error', 'Could not delete messages. Messages older than 14 days cannot be bulk-deleted.')], ephemeral: true });
+    }
   },
 };

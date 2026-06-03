@@ -26,9 +26,7 @@ module.exports = {
     }
 
     const track = queue.tracks[0];
-    if (!queue.currentTrack) {
-      queue.currentTrack = { title: track.title, url: track.url, duration: track.duration || 0, startTime: Date.now() };
-    }
+    if (!queue.currentTrack) queue.currentTrack = { title: track.title, url: track.url, duration: track.duration || 0, startTime: Date.now() };
 
     const elapsed = Math.floor((Date.now() - queue.currentTrack.startTime) / 1000);
     const duration = queue.currentTrack.duration || 0;

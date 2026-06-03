@@ -19,7 +19,7 @@ module.exports = {
 
     if (userData.balance < amount) {
       return interaction.reply({
-        embeds: [embeds.error(`You only have **${userData.balance}** coins to deposit.`)],
+        embeds: [embeds.error('Insufficient Balance', `You only have **${userData.balance}** coins to deposit.`)],
       });
     }
 
@@ -28,7 +28,7 @@ module.exports = {
     db.set('economy', interaction.user.id, userData);
 
     await interaction.reply({
-      embeds: [embeds.success(`Deposited **${amount}** coins into your bank.`)],
+      embeds: [embeds.success('Deposit Successful', `Deposited **${amount}** coins into your bank.`)],
     });
   },
 };
