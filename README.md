@@ -1,7 +1,7 @@
 # a2bot — All-in-One Discord Bot
 
 An all-in-one Discord bot created by **Ayushrajdev Anzariqbal**. Moderates, plays music, runs economy, chats with AI, sets up servers, generates improvement reports, and more.
-
+you should try it its opensource 
 ## Features
 
 | Category | Commands |
