@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
 const embeds = require('../../utils/embeds');
-const config = require('../../../config');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -11,8 +10,7 @@ module.exports = {
     const embed = embeds.info('Invite Links')
       .addFields(
         { name: 'Invite Bot', value: `[Click Here](${invite})` },
-        { name: 'Support Server', value: '[Join Support](https://discord.gg/your-server)' },
-        { name: 'Website', value: '[Visit Website](https://example.com)' },
+        { name: 'Website', value: '[a2bot.ayushanzar.qzz.io](https://a2bot.ayushanzar.qzz.io)' },
       );
 
     await interaction.reply({ embeds: [embed] });
