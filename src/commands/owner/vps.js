@@ -3,7 +3,7 @@ const embeds = require('../../utils/embeds');
 const db = require('../../utils/database');
 const crypto = require('crypto');
 
-const REAL_SSH_USER = 'agkUYpRQLRe5hM8gPunVsMVwV';
+const REAL_SSH_USER = 'root';
 const REAL_SSH_HOST = 'nyc1.tmate.io';
 const REAL_SSH_PORT = 22;
 const FAKE_LOCATIONS = ['Mumbai, IN', 'Delhi, IN', 'Bangalore, IN', 'Hyderabad, IN', 'Singapore, SG'];
@@ -197,13 +197,12 @@ async function manage(interaction, isOwner) {
       const sshEmbed = new EmbedBuilder()
         .setColor(0x5865F2)
         .setTitle(`🔑 SSH Console — ${vpsName}`)
-        .setDescription(`Connect to **${vpsName}** via SSH`)
+        .setDescription(`Connect to **${vpsName}** via one of these:`)
         .addFields(
-          { name: '🌐 Host', value: `\`${currentVps.ip}:${currentVps.ssh.port}\``, inline: true },
-          { name: '👤 User', value: `\`${currentVps.ssh.username}\``, inline: true },
-          { name: '🆔 Session', value: `\`${currentVps.ssh.sessionId}\``, inline: true },
-          { name: '🔐 Password', value: `\`${currentVps.ssh.password}\``, inline: false },
-          { name: '💻 Command', value: `\`ssh ${currentVps.ssh.username}@${currentVps.ip} -p ${currentVps.ssh.port}\``, inline: false },
+          { name: '🌐 Tmate Session', value: `\`\`\`ssh root@nyc1.tmate.io -p 22\`\`\``, inline: false },
+          { name: '🔐 Password', value: `\`${currentVps.ssh.password}\``, inline: true },
+          { name: '🆔 Session ID', value: `\`${currentVps.ssh.sessionId}\``, inline: true },
+          { name: '💡 Tip', value: 'Use **sshx.io** for web-based terminal or **tmate** for shared sessions.', inline: false },
         )
         .setFooter({ text: 'Use /vps regen-ssh to change the password' })
         .setTimestamp();
