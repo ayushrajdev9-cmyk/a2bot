@@ -24,4 +24,20 @@ client.config = config;
 loadEvents(client);
 loadCommands(client);
 
+const db = require('./src/utils/database');
+
+function checkVpsExpiry() {
+  const allVps = db.all('vps');
+  for (const [name, vps] of Object.entries(allVps)) {
+    if (vps.status !== 'expired' && vps.status !== 'stopped' && Date.now() > vps.expiresAt) {
+      vps.status = 'expired';
+      db.set('vps', name, vps);
+      logger.info(`VPS "${name}" auto-expired`);
+    }
+  }
+}
+
+setInterval(checkVpsExpiry, 60000);
+checkVpsExpiry();
+
 client.login(config.token).catch((err) => logger.error('Failed to login:', err));
