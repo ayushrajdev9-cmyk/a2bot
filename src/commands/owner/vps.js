@@ -10,12 +10,12 @@ const FAKE_LOCATIONS = ['Mumbai, IN', 'Delhi, IN', 'Bangalore, IN', 'Hyderabad, 
 const VPS_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
 const PLANS = {
-  grass: { ram: 2, cpu: 1, disk: 25, label: '🌱 Grass Plan', price: '₹299/mo' },
-  sapling: { ram: 4, cpu: 2, disk: 50, label: '🌿 Sapling Plan', price: '₹599/mo' },
-  tree: { ram: 8, cpu: 4, disk: 100, label: '🌳 Tree Plan', price: '₹1,199/mo' },
-  diamond: { ram: 16, cpu: 6, disk: 200, label: '💎 Diamond Plan', price: '₹2,499/mo' },
-  netherite: { ram: 32, cpu: 8, disk: 400, label: '👑 Netherite Plan', price: '₹4,999/mo' },
-  bedrock: { ram: 64, cpu: 16, disk: 800, label: '🚀 Bedrock Plan', price: '₹9,999/mo' },
+  grass: { ram: 2, cpu: 1, disk: 10, label: '🌱 Grass Plan', price: '₹299/mo' },
+  sapling: { ram: 4, cpu: 2, disk: 10, label: '🌿 Sapling Plan', price: '₹599/mo' },
+  tree: { ram: 8, cpu: 4, disk: 10, label: '🌳 Tree Plan', price: '₹1,199/mo' },
+  diamond: { ram: 16, cpu: 6, disk: 10, label: '💎 Diamond Plan', price: '₹2,499/mo' },
+  netherite: { ram: 32, cpu: 8, disk: 10, label: '👑 Netherite Plan', price: '₹4,999/mo' },
+  bedrock: { ram: 64, cpu: 16, disk: 10, label: '🚀 Bedrock Plan', price: '₹9,999/mo' },
 };
 
 const FAKE_RAM_MAP = {
