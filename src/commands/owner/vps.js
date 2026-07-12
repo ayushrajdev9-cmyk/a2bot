@@ -30,6 +30,7 @@ module.exports = {
       .setName('deploy')
       .setDescription('Deploy a new VPS instance')
       .addStringOption(o => o.setName('name').setDescription('VPS name').setRequired(true))
+      .addUserOption(o => o.setName('user').setDescription('User to assign this VPS to').setRequired(true))
       .addStringOption(o => o.setName('plan').setDescription('VPS plan').setRequired(true)
         .addChoices(
           { name: '🌱 Grass (2GB RAM)', value: 'grass' },
@@ -57,23 +58,33 @@ module.exports = {
   async execute(interaction, client) {
     await interaction.deferReply({ ephemeral: true });
 
-    if (interaction.user.id !== client.config.ownerId) {
-      return interaction.editReply({ embeds: [embeds.error('Access Denied', 'Only **Ayush Rajdev** can use VPS commands.')] });
+    const sub = interaction.options.getSubcommand();
+    const userId = interaction.user.id;
+    const isOwner = userId === client.config.ownerId;
+
+    if (sub === 'deploy' || sub === 'renew' || sub === 'list') {
+      if (!isOwner) {
+        return interaction.editReply({ embeds: [embeds.error('Access Denied', 'Only **Ayush Rajdev** can deploy/renew/list VPS.')] });
+      }
     }
 
-    const sub = interaction.options.getSubcommand();
-
     if (sub === 'deploy') return deploy(interaction);
-    if (sub === 'manage') return manage(interaction);
-    if (sub === 'regen-ssh') return regenSsh(interaction);
+    if (sub === 'manage') return manage(interaction, isOwner);
+    if (sub === 'regen-ssh') return regenSsh(interaction, isOwner);
     if (sub === 'list') return list(interaction);
     if (sub === 'renew') return renew(interaction);
   },
   async autocomplete(interaction) {
     const vpsList = db.all('vps');
     const names = Object.keys(vpsList);
+    const userId = interaction.user.id;
+    const isOwner = userId === interaction.client.config.ownerId;
     const focused = interaction.options.getFocused().toLowerCase();
-    const filtered = names.filter(n => n.toLowerCase().includes(focused)).slice(0, 25);
+    const filtered = names.filter(n => {
+      const v = vpsList[n];
+      if (isOwner) return true;
+      return v.userId === userId;
+    }).filter(n => n.toLowerCase().includes(focused)).slice(0, 25);
     await interaction.respond(filtered.map(n => ({ name: n, value: n })));
   },
 };
@@ -81,6 +92,7 @@ module.exports = {
 async function deploy(interaction) {
   const name = interaction.options.getString('name');
   const plan = interaction.options.getString('plan');
+  const targetUser = interaction.options.getUser('user');
 
   const existing = db.get('vps', name);
   if (existing) {
@@ -102,6 +114,8 @@ async function deploy(interaction) {
     disk: planInfo.disk,
     ip: REAL_SSH_HOST,
     ssh: { username: REAL_SSH_USER, password, port: REAL_SSH_PORT, sessionId },
+    userId: targetUser.id,
+    userTag: targetUser.tag,
     deployedAt: now,
     expiresAt: now + VPS_DURATION_MS,
     status: 'running',
@@ -114,10 +128,11 @@ async function deploy(interaction) {
   const embed = new EmbedBuilder()
     .setColor(0x57F287)
     .setTitle('✅ VPS Deployed Successfully')
-    .setDescription(`**${name}** is now running on the **${planInfo.label}**!`)
+    .setDescription(`**${name}** is now running on the **${planInfo.label}**!\nAssigned to: ${targetUser}`)
     .addFields(
       { name: '📋 Advertised Specs', value: `🟢 **${fakeRam}GB** RAM\n🟢 **${planInfo.cpu}** vCPU\n🟢 **${planInfo.disk}GB** NVMe SSD`, inline: true },
       { name: '📋 Actual Specs', value: `🔴 **${vps.actualRam}GB** RAM\n🟢 **${planInfo.cpu}** vCPU\n🟢 **${planInfo.disk}GB** NVMe SSD`, inline: true },
+      { name: '👤 Assigned To', value: `${targetUser} (\`${targetUser.id}\`)`, inline: true },
       { name: '🌐 Connection', value: `Host: \`${REAL_SSH_HOST}:${REAL_SSH_PORT}\`\nUser: \`${REAL_SSH_USER}\`\nPass: \`${password}\`\nSession: \`${sessionId}\``, inline: false },
       { name: '📍 Location', value: vps.location, inline: true },
       { name: '💰 Price', value: planInfo.price, inline: true },
@@ -130,11 +145,15 @@ async function deploy(interaction) {
   await interaction.editReply({ embeds: [embed] });
 }
 
-async function manage(interaction) {
+async function manage(interaction, isOwner) {
   const name = interaction.options.getString('name');
   const vps = db.get('vps', name);
   if (!vps) {
     return interaction.editReply({ embeds: [embeds.error('Not Found', `No VPS named **${name}** found.`)] });
+  }
+
+  if (!isOwner && interaction.user.id !== vps.userId) {
+    return interaction.editReply({ embeds: [embeds.error('Not Your VPS', 'This VPS does not belong to you.')] });
   }
 
   checkExpiry(vps);
@@ -209,11 +228,15 @@ async function manage(interaction) {
   });
 }
 
-async function regenSsh(interaction) {
+async function regenSsh(interaction, isOwner) {
   const name = interaction.options.getString('name');
   const vps = db.get('vps', name);
   if (!vps) {
     return interaction.editReply({ embeds: [embeds.error('Not Found', `No VPS named **${name}** found.`)] });
+  }
+
+  if (!isOwner && interaction.user.id !== vps.userId) {
+    return interaction.editReply({ embeds: [embeds.error('Not Your VPS', 'This VPS does not belong to you.')] });
   }
 
   checkExpiry(vps);
@@ -258,7 +281,8 @@ async function list(interaction) {
     const expiresIn = v.expiresAt > Date.now()
       ? `<t:${Math.floor(v.expiresAt / 1000)}:R>`
       : '**EXPIRED**';
-    return `${sEmoji} **${n}** — ${v.planLabel} — ${v.location} — Exp: ${expiresIn}`;
+    const assigned = v.userTag || `<@${v.userId}>` || 'Unknown';
+    return `${sEmoji} **${n}** — ${v.planLabel} — ${assigned} — Exp: ${expiresIn}`;
   }).join('\n');
 
   const embed = new EmbedBuilder()
@@ -331,8 +355,8 @@ function buildVpsEmbed(name, vps, notice) {
     .setDescription(notice || `Managing **${name}** on the **${vps.planLabel}** plan`)
     .addFields(
       { name: '📊 Status', value: `${emoji} ${status}`, inline: true },
+      { name: '👤 Assigned To', value: vps.userId ? `<@${vps.userId}>` : 'Unknown', inline: true },
       { name: '📍 Location', value: vps.location, inline: true },
-      { name: '💰 Price', value: vps.price, inline: true },
       { name: '💾 Advertised RAM', value: `🟢 **${vps.advertisedRam}GB**`, inline: true },
       { name: '💾 Actual RAM', value: `🔴 **${vps.actualRam}GB**`, inline: true },
       { name: '🧠 vCPU', value: `**${vps.cpu}** cores`, inline: true },
