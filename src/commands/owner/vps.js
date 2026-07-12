@@ -50,6 +50,10 @@ module.exports = {
     .addSubcommand(s => s
       .setName('renew')
       .setDescription('Renew a VPS for another 7 days')
+      .addStringOption(o => o.setName('name').setDescription('VPS name').setRequired(true).setAutocomplete(true)))
+    .addSubcommand(s => s
+      .setName('delete')
+      .setDescription('Delete a deployed VPS')
       .addStringOption(o => o.setName('name').setDescription('VPS name').setRequired(true).setAutocomplete(true))),
   async execute(interaction, client) {
     await interaction.deferReply({ ephemeral: true });
@@ -58,7 +62,7 @@ module.exports = {
     const userId = interaction.user.id;
     const isOwner = userId === client.config.ownerId;
 
-    if (sub === 'deploy' || sub === 'renew' || sub === 'list') {
+    if (sub === 'deploy' || sub === 'renew' || sub === 'list' || sub === 'delete') {
       if (!isOwner) {
         return interaction.editReply({ embeds: [embeds.error('Access Denied', 'Only **Ayush Rajdev** can deploy/renew/list VPS.')] });
       }
@@ -69,6 +73,7 @@ module.exports = {
     if (sub === 'regen-ssh') return regenSsh(interaction, isOwner);
     if (sub === 'list') return list(interaction);
     if (sub === 'renew') return renew(interaction);
+    if (sub === 'delete') return deleteVps(interaction);
   },
   async autocomplete(interaction) {
     const vpsList = db.all('vps');
@@ -313,6 +318,17 @@ async function renew(interaction) {
     .setTimestamp();
 
   await interaction.editReply({ embeds: [embed] });
+}
+
+async function deleteVps(interaction) {
+  const name = interaction.options.getString('name');
+  const vps = db.get('vps', name);
+  if (!vps) {
+    return interaction.editReply({ embeds: [embeds.error('Not Found', `No VPS named **${name}** found.`)] });
+  }
+
+  db.delete('vps', name);
+  await interaction.editReply({ embeds: [embeds.success('🗑️ VPS Deleted', `**${name}** has been permanently deleted.`)] });
 }
 
 function checkExpiry(vps) {
