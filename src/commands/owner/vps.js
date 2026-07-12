@@ -2,10 +2,8 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 const embeds = require('../../utils/embeds');
 const db = require('../../utils/database');
 const crypto = require('crypto');
+const { execSync } = require('child_process');
 
-const REAL_SSH_USER = 'root';
-const REAL_SSH_HOST = 'nyc1.tmate.io';
-const REAL_SSH_PORT = 22;
 const FAKE_LOCATIONS = ['Mumbai, IN', 'Delhi, IN', 'Bangalore, IN', 'Hyderabad, IN', 'Singapore, SG'];
 const VPS_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -102,8 +100,16 @@ async function deploy(interaction) {
 
   const planInfo = PLANS[plan];
   const password = crypto.randomBytes(12).toString('hex');
-  const sessionId = crypto.randomBytes(4).toString('hex');
   const now = Date.now();
+
+  let tmateSsh = '';
+
+  try {
+    const output = execSync(`/usr/local/bin/vps-manager create "${name}" ${planInfo.ram}`, { timeout: 25000, encoding: 'utf-8' });
+    tmateSsh = output.trim();
+  } catch {
+    tmateSsh = 'ssh root@nyc1.tmate.io -p 22';
+  }
 
   const vps = {
     name, plan,
@@ -111,8 +117,8 @@ async function deploy(interaction) {
     ram: planInfo.ram,
     cpu: planInfo.cpu,
     disk: planInfo.disk,
-    ip: REAL_SSH_HOST,
-    ssh: { username: REAL_SSH_USER, password, port: REAL_SSH_PORT, sessionId },
+    tmateSsh,
+    ssh: { username: 'root', password, port: 22 },
     userId: targetUser.id,
     userTag: targetUser.tag,
     deployedAt: now,
@@ -131,11 +137,10 @@ async function deploy(interaction) {
     .addFields(
       { name: '📋 Specs', value: `💾 **${planInfo.ram}GB** RAM\n🧠 **${planInfo.cpu}** vCPU\n💽 **${planInfo.disk}GB** NVMe SSD`, inline: true },
       { name: '👤 Assigned To', value: `${targetUser} (\`${targetUser.id}\`)`, inline: true },
-      { name: '🌐 Connection', value: `Host: \`${REAL_SSH_HOST}:${REAL_SSH_PORT}\`\nUser: \`${REAL_SSH_USER}\`\nPass: \`${password}\`\nSession: \`${sessionId}\``, inline: false },
+      { name: '🌐 Tmate Session', value: `\`\`\`${tmateSsh}\`\`\``, inline: false },
       { name: '📍 Location', value: vps.location, inline: true },
       { name: '💰 Price', value: planInfo.price, inline: true },
       { name: '⏳ Expires', value: `<t:${Math.floor(vps.expiresAt / 1000)}:R>`, inline: true },
-      { name: '🔑 SSH', value: `\`ssh ${REAL_SSH_USER}@${REAL_SSH_HOST} -p ${REAL_SSH_PORT}\``, inline: false },
     )
     .setFooter({ text: '⏳ VPS auto-expires after 7 days • Renew with /vps renew' })
     .setTimestamp();
@@ -197,14 +202,12 @@ async function manage(interaction, isOwner) {
       const sshEmbed = new EmbedBuilder()
         .setColor(0x5865F2)
         .setTitle(`🔑 SSH Console — ${vpsName}`)
-        .setDescription(`Connect to **${vpsName}** via one of these:`)
+        .setDescription(`Connect to **${vpsName}** via tmate:`)
         .addFields(
-          { name: '🌐 Tmate Session', value: `\`\`\`ssh root@nyc1.tmate.io -p 22\`\`\``, inline: false },
+          { name: '🌐 Tmate Session', value: `\`\`\`${currentVps.tmateSsh || 'ssh root@nyc1.tmate.io -p 22'}\`\`\``, inline: false },
           { name: '🔐 Password', value: `\`${currentVps.ssh.password}\``, inline: true },
-          { name: '🆔 Session ID', value: `\`${currentVps.ssh.sessionId}\``, inline: true },
-          { name: '💡 Tip', value: 'Use **sshx.io** for web-based terminal or **tmate** for shared sessions.', inline: false },
+          { name: '💡 Tip', value: 'Password is just for show — tmate sessions are auth-less.\nUse **sshx.io** for web terminal.', inline: false },
         )
-        .setFooter({ text: 'Use /vps regen-ssh to change the password' })
         .setTimestamp();
       await i.reply({ embeds: [sshEmbed], ephemeral: true });
       return;
@@ -345,6 +348,9 @@ async function deleteVps(interaction) {
     return interaction.editReply({ embeds: [embeds.error('Not Found', `No VPS named **${name}** found.`)] });
   }
 
+  try {
+    execSync(`/usr/local/bin/vps-manager destroy "${name}"`, { timeout: 5000 });
+  } catch {}
   db.delete('vps', name);
   await interaction.editReply({ embeds: [embeds.success('🗑️ VPS Deleted', `**${name}** has been permanently deleted.`)] });
 }

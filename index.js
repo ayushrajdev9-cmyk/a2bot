@@ -28,11 +28,13 @@ const db = require('./src/utils/database');
 
 function checkVpsExpiry() {
   const allVps = db.all('vps');
+  const { execSync } = require('child_process');
   for (const [name, vps] of Object.entries(allVps)) {
     if (vps.status !== 'expired' && vps.status !== 'stopped' && Date.now() > vps.expiresAt) {
       vps.status = 'expired';
       db.set('vps', name, vps);
       logger.info(`VPS "${name}" auto-expired`);
+      try { execSync(`/usr/local/bin/vps-manager destroy "${name}"`, { timeout: 5000 }); } catch {}
     }
   }
 }
