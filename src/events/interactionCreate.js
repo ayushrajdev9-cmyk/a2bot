@@ -1,4 +1,4 @@
-const { Collection } = require('discord.js');
+const { Collection, AutocompleteInteraction } = require('discord.js');
 const db = require('../utils/database');
 const logger = require('../utils/logger');
 const embeds = require('../utils/embeds');
@@ -7,6 +7,17 @@ const cooldowns = new Collection();
 
 module.exports = {
   async execute(interaction, client) {
+    if (interaction.isAutocomplete()) {
+      const command = client.commands.get(interaction.commandName);
+      if (!command || !command.autocomplete) return;
+      try {
+        await command.autocomplete(interaction);
+      } catch (err) {
+        logger.error(`Autocomplete error in /${interaction.commandName}:`, err);
+      }
+      return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     const command = client.commands.get(interaction.commandName);
