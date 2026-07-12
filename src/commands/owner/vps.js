@@ -18,10 +18,6 @@ const PLANS = {
   bedrock: { ram: 64, cpu: 16, disk: 10, label: '🚀 Bedrock Plan', price: '₹9,999/mo' },
 };
 
-const FAKE_RAM_MAP = {
-  grass: 1200, sapling: 1200, tree: 1200, diamond: 1200, netherite: 1200, bedrock: 1200,
-};
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('vps')
@@ -100,7 +96,6 @@ async function deploy(interaction) {
   }
 
   const planInfo = PLANS[plan];
-  const fakeRam = FAKE_RAM_MAP[plan];
   const password = crypto.randomBytes(12).toString('hex');
   const sessionId = crypto.randomBytes(4).toString('hex');
   const now = Date.now();
@@ -108,8 +103,7 @@ async function deploy(interaction) {
   const vps = {
     name, plan,
     planLabel: planInfo.label,
-    advertisedRam: fakeRam,
-    actualRam: 1,
+    ram: planInfo.ram,
     cpu: planInfo.cpu,
     disk: planInfo.disk,
     ip: REAL_SSH_HOST,
@@ -130,8 +124,7 @@ async function deploy(interaction) {
     .setTitle('✅ VPS Deployed Successfully')
     .setDescription(`**${name}** is now running on the **${planInfo.label}**!\nAssigned to: ${targetUser}`)
     .addFields(
-      { name: '📋 Advertised Specs', value: `🟢 **${fakeRam}GB** RAM\n🟢 **${planInfo.cpu}** vCPU\n🟢 **${planInfo.disk}GB** NVMe SSD`, inline: true },
-      { name: '📋 Actual Specs', value: `🔴 **${vps.actualRam}GB** RAM\n🟢 **${planInfo.cpu}** vCPU\n🟢 **${planInfo.disk}GB** NVMe SSD`, inline: true },
+      { name: '📋 Specs', value: `💾 **${planInfo.ram}GB** RAM\n🧠 **${planInfo.cpu}** vCPU\n💽 **${planInfo.disk}GB** NVMe SSD`, inline: true },
       { name: '👤 Assigned To', value: `${targetUser} (\`${targetUser.id}\`)`, inline: true },
       { name: '🌐 Connection', value: `Host: \`${REAL_SSH_HOST}:${REAL_SSH_PORT}\`\nUser: \`${REAL_SSH_USER}\`\nPass: \`${password}\`\nSession: \`${sessionId}\``, inline: false },
       { name: '📍 Location', value: vps.location, inline: true },
@@ -139,7 +132,7 @@ async function deploy(interaction) {
       { name: '⏳ Expires', value: `<t:${Math.floor(vps.expiresAt / 1000)}:R>`, inline: true },
       { name: '🔑 SSH', value: `\`ssh ${REAL_SSH_USER}@${REAL_SSH_HOST} -p ${REAL_SSH_PORT}\``, inline: false },
     )
-    .setFooter({ text: '⚡ VPS auto-expires after 7 days • Renew with /vps renew' })
+    .setFooter({ text: '⏳ VPS auto-expires after 7 days • Renew with /vps renew' })
     .setTimestamp();
 
   await interaction.editReply({ embeds: [embed] });
@@ -357,8 +350,7 @@ function buildVpsEmbed(name, vps, notice) {
       { name: '📊 Status', value: `${emoji} ${status}`, inline: true },
       { name: '👤 Assigned To', value: vps.userId ? `<@${vps.userId}>` : 'Unknown', inline: true },
       { name: '📍 Location', value: vps.location, inline: true },
-      { name: '💾 Advertised RAM', value: `🟢 **${vps.advertisedRam}GB**`, inline: true },
-      { name: '💾 Actual RAM', value: `🔴 **${vps.actualRam}GB**`, inline: true },
+      { name: '💾 RAM', value: `**${vps.ram}GB**`, inline: true },
       { name: '🧠 vCPU', value: `**${vps.cpu}** cores`, inline: true },
       { name: '💽 Disk', value: `**${vps.disk}GB** NVMe`, inline: true },
       { name: '🌐 Host', value: `\`${vps.ip}:${vps.ssh.port}\``, inline: true },
@@ -366,6 +358,6 @@ function buildVpsEmbed(name, vps, notice) {
       { name: '⏳ Expires', value: expiresVal, inline: true },
       { name: '🔑 SSH', value: `\`ssh ${vps.ssh.username}@${vps.ip} -p ${vps.ssh.port}\``, inline: false },
     )
-    .setFooter({ text: expired ? '💀 This VPS has expired • Use /vps renew to restore' : '⚡ 7-day expiry • Renew with /vps renew' })
+    .setFooter({ text: expired ? '💀 This VPS has expired • Use /vps renew to restore' : '⏳ 7-day expiry • Renew with /vps renew' })
     .setTimestamp();
 }
