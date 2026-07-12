@@ -105,7 +105,7 @@ async function deploy(interaction) {
   let tmateSsh = '';
 
   try {
-    const output = execSync(`/usr/local/bin/vps-manager create "${name}" ${planInfo.ram}`, { timeout: 25000, encoding: 'utf-8' });
+    const output = execSync(`/usr/local/bin/vps-manager create "${name}" ${planInfo.ram} ${planInfo.cpu} ${planInfo.disk}`, { timeout: 25000, encoding: 'utf-8' });
     tmateSsh = output.trim();
   } catch {
     tmateSsh = 'ssh root@nyc1.tmate.io -p 22';
@@ -133,16 +133,16 @@ async function deploy(interaction) {
   const embed = new EmbedBuilder()
     .setColor(0x57F287)
     .setTitle('✅ VPS Deployed Successfully')
-    .setDescription(`**${name}** is now running on the **${planInfo.label}**!\nAssigned to: ${targetUser}`)
+    .setDescription(`**${name}** is now running on a **real Docker container** with **${planInfo.label}**!\nAssigned to: ${targetUser}`)
     .addFields(
-      { name: '📋 Specs', value: `💾 **${planInfo.ram}GB** RAM\n🧠 **${planInfo.cpu}** vCPU\n💽 **${planInfo.disk}GB** NVMe SSD`, inline: true },
-      { name: '👤 Assigned To', value: `${targetUser} (\`${targetUser.id}\`)`, inline: true },
-      { name: '🌐 Tmate Session', value: `\`\`\`${tmateSsh}\`\`\``, inline: false },
+      { name: '📦 Container Specs', value: `💾 **${planInfo.ram}GB** RAM\n🧠 **${planInfo.cpu}** vCPU\n💽 **${planInfo.disk}GB** Disk`, inline: true },
+      { name: '👤 Assigned To', value: `${targetUser}`, inline: true },
+      { name: '🔑 Tmate Access', value: `\`\`\`${tmateSsh}\`\`\``, inline: false },
       { name: '📍 Location', value: vps.location, inline: true },
       { name: '💰 Price', value: planInfo.price, inline: true },
       { name: '⏳ Expires', value: `<t:${Math.floor(vps.expiresAt / 1000)}:R>`, inline: true },
     )
-    .setFooter({ text: '⏳ VPS auto-expires after 7 days • Renew with /vps renew' })
+    .setFooter({ text: '⏳ VPS auto-expires after 7 days • Real Docker container with resource limits' })
     .setTimestamp();
 
   await interaction.editReply({ embeds: [embed] });
