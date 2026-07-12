@@ -164,7 +164,8 @@ async function manage(interaction, isOwner) {
     new ButtonBuilder().setCustomId(`vps_restart_${name}`).setLabel('🔄 Restart').setStyle(ButtonStyle.Primary),
   );
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`vps_rebuild_${name}`).setLabel('🔧 Rebuild').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(`vps_ssh_${name}`).setLabel('🔑 SSH Console').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(`vps_rebuild_${name}`).setLabel('🔧 Rebuild').setStyle(ButtonStyle.Primary),
     new ButtonBuilder().setCustomId(`vps_delete_${name}`).setLabel('🗑️ Delete').setStyle(ButtonStyle.Danger),
   );
 
@@ -190,6 +191,24 @@ async function manage(interaction, isOwner) {
       db.delete('vps', vpsName);
       await i.update({ embeds: [embeds.success('🗑️ VPS Deleted', `**${vpsName}** has been destroyed.`)], components: [] });
       return collector.stop();
+    }
+
+    if (action === 'ssh') {
+      const sshEmbed = new EmbedBuilder()
+        .setColor(0x5865F2)
+        .setTitle(`🔑 SSH Console — ${vpsName}`)
+        .setDescription(`Connect to **${vpsName}** via SSH`)
+        .addFields(
+          { name: '🌐 Host', value: `\`${currentVps.ip}:${currentVps.ssh.port}\``, inline: true },
+          { name: '👤 User', value: `\`${currentVps.ssh.username}\``, inline: true },
+          { name: '🆔 Session', value: `\`${currentVps.ssh.sessionId}\``, inline: true },
+          { name: '🔐 Password', value: `\`${currentVps.ssh.password}\``, inline: false },
+          { name: '💻 Command', value: `\`ssh ${currentVps.ssh.username}@${currentVps.ip} -p ${currentVps.ssh.port}\``, inline: false },
+        )
+        .setFooter({ text: 'Use /vps regen-ssh to change the password' })
+        .setTimestamp();
+      await i.reply({ embeds: [sshEmbed], ephemeral: true });
+      return;
     }
 
     if (checkExpiry(currentVps)) {
